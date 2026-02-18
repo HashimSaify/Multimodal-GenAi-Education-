@@ -1,0 +1,9 @@
+﻿fastapi
+uvicorn
+openai
+streamlit
+chromadb
+sentence-transformers
+python-dotenv
+requests
+google-generativeai
