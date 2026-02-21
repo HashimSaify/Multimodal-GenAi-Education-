@@ -8,11 +8,12 @@ class GenerateContentRequest(BaseModel):
 
 
 class GenerateContentResponse(BaseModel):
-    overview: str
-    key_points: List[str]
-    real_world_example: str
-    flashcards: List[str]
-    summary: str
+    error: Optional[str] = None
+    overview: Optional[str] = None
+    key_points: Optional[List[str]] = None
+    real_world_example: Optional[str] = None
+    flashcards: Optional[List[str]] = None
+    summary: Optional[str] = None
 
 
 class GenerateImageRequest(BaseModel):

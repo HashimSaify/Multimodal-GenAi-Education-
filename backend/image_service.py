@@ -1,32 +1,50 @@
 ﻿import os
 import base64
+import requests
 from functools import lru_cache
 from typing import Optional
-from huggingface_hub import InferenceClient
 
-
-def _call_hf(prompt: str) -> str:
-    api_key = os.getenv("HUGGINGFACE_API_KEY")
-    model_name = os.getenv(
-        "HUGGINGFACE_IMAGE_MODEL",
-        "stabilityai/stable-diffusion-xl-base-1.0",
-    )
+def _call_custom_api(prompt: str) -> str:
+    api_key = os.getenv("IMAGE_API_KEY")
+    model_name = os.getenv("IMAGE_MODEL", "flux2-dev")
+    base_url = os.getenv("IMAGE_BASE_URL", "https://api.infip.pro/v1")
 
     if not api_key:
-        raise RuntimeError("HUGGINGFACE_API_KEY is not set")
+        raise RuntimeError("IMAGE_API_KEY is not set in .env")
 
-    client = InferenceClient(api_key=api_key)
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+
+    clean_base_url = base_url.split("/images/generations")[0].rstrip("/")
+    url = f"{clean_base_url}/images/generations"
     
+    payload = {
+        "model": model_name,
+        "prompt": prompt,
+        "n": 1,
+        "size": "1024x1024",
+        "response_format": "url"
+    }
+
     try:
-        # text_to_image returns a PIL Image or bytes depending on usage
-        image = client.text_to_image(prompt, model=model_name)
-        # Convert PIL Image or bytes to base64
-        import io
-        img_byte_arr = io.BytesIO()
-        image.save(img_byte_arr, format='PNG')
-        return base64.b64encode(img_byte_arr.getvalue()).decode("utf-8")
+        response = requests.post(url, headers=headers, json=payload, timeout=180)
+        response.raise_for_status()
+        data = response.json()
+        
+        image_url = data["data"][0]["url"]
+        
+        # Download the image from the URL and convert to Base64
+        image_res = requests.get(image_url, timeout=60)
+        image_res.raise_for_status()
+        return base64.b64encode(image_res.content).decode("utf-8")
+        
     except Exception as e:
-        raise RuntimeError(f"Hugging Face image error: {e}")
+        err_msg = str(e)
+        if hasattr(e, 'response') and e.response is not None:
+            err_msg += f" - Response: {e.response.text}"
+        raise RuntimeError(f"Image API error: {err_msg}")
 
 
 @lru_cache(maxsize=64)
@@ -38,17 +56,11 @@ def _cached_generate_images(topic: str, grade_level: str):
         "Use labels, minimal colors, white background."
     )
 
-    flashcard_prompt = (
-        f"Create a flashcard-style educational visual about {topic}{grade_text}. "
-        "Add a title and 2-3 labeled elements. White background."
-    )
-
-    diagram_b64 = _call_hf(diagram_prompt)
-    flashcard_b64 = _call_hf(flashcard_prompt)
+    diagram_b64 = _call_custom_api(diagram_prompt)
 
     return {
         "diagram_b64": diagram_b64,
-        "flashcard_b64": flashcard_b64,
+        "flashcard_b64": None,
     }
 
 

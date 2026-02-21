@@ -17,7 +17,13 @@ def build_prompt(topic: str, grade_level: str | None):
     grade_text = f" for {grade_level} students" if grade_level else ""
     subject = _infer_subject(topic)
     return f"""
-You are an expert education assistant. Explain the topic: {topic}{grade_text}.
+You are an expert education assistant. First, determine if the topic "{topic}" is related to education, academia, learning concepts, or skills.
+If the topic is clearly NOT related to education (e.g. general chit-chat, cooking recipes, inappropriate content):
+Return ONLY valid JSON with a single field:
+- error: "This topic does not appear to be related to education. Please ask about an academic subject, concept, or skill."
+
+If the topic IS related to education:
+Explain the topic: {topic}{grade_text}.
 Adjust depth and vocabulary for {grade_level or 'a general audience'}.
 Focus on clear structure and accuracy for {subject} topics.
 Return ONLY valid JSON with the following fields:
