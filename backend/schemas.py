@@ -21,20 +21,3 @@ class GenerateImageRequest(BaseModel):
     grade_level: Optional[str] = None
 
 
-class StoreVectorRequest(BaseModel):
-    prompt: str
-    explanation: str
-
-
-class SearchRequest(BaseModel):
-    query: str
-    top_k: int = 3
-
-
-class SearchResult(BaseModel):
-    prompt: str
-    explanation: str
-
-
-class SearchResponse(BaseModel):
-    results: List[SearchResult]
