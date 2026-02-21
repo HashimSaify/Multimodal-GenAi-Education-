@@ -49,11 +49,10 @@ def _call_custom_api(prompt: str) -> str:
 
 @lru_cache(maxsize=64)
 def _cached_generate_images(topic: str, grade_level: str):
-    grade_text = f" for {grade_level} students" if grade_level else ""
-
     diagram_prompt = (
-        f"Create a clean educational diagram about {topic}{grade_text}. "
-        "Use labels, minimal colors, white background."
+        f"Create a high quality, clean educational diagram about {topic}. "
+        "Show the visual concepts clearly. DO NOT include any text, labels, words, or letters in the image. "
+        "The image should be entirely text-free, relying only on visuals and shapes. White background."
     )
 
     diagram_b64 = _call_custom_api(diagram_prompt)

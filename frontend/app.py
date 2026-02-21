@@ -667,7 +667,7 @@ if prompt := st.chat_input("Ask about any concept, topic, or idea..."):
                 content_res = requests.post(
                     f"{API_URL}/generate-content", 
                     json=payload,
-                    timeout=120
+                    timeout=300
                 )
                 
                 if content_res.status_code != 200:
@@ -684,7 +684,7 @@ if prompt := st.chat_input("Ask about any concept, topic, or idea..."):
                 image_res = requests.post(
                     f"{API_URL}/generate-image", 
                     json=payload,
-                    timeout=120
+                    timeout=300
                 )
                 images = image_res.json() if image_res.status_code == 200 else {}
                 
