@@ -57,8 +57,8 @@ def _safe_json(text: str) -> dict:
 @lru_cache(maxsize=128)
 def _cached_generate_content(topic: str, grade_level: str):
     api_key = os.getenv("LLM_API_KEY")
-    model_name = os.getenv("LLM_MODEL", "llama3.1-8b")
-    base_url = os.getenv("LLM_BASE_URL", "https://api.cerebras.ai/v1")
+    model_name = os.getenv("LLM_MODEL", "provider-1/gpt-oss-20b")
+    base_url = os.getenv("LLM_BASE_URL", "https://api.a4f.co/v1")
 
     if not api_key:
         raise RuntimeError("LLM_API_KEY is not set in .env")
@@ -73,14 +73,12 @@ def _cached_generate_content(topic: str, grade_level: str):
     val_payload = {
         "model": model_name,
         "messages": [{"role": "user", "content": build_validation_prompt(topic)}],
-        "max_tokens": 5,
-        "temperature": 0.0
+        "temperature": 0.1  # Changed from 0.0 because some A4F providers reject rigid 0.0 temps
     }
     try:
-        val_res = requests.post(url, headers=headers, json=val_payload, timeout=10)
+        val_res = requests.post(url, headers=headers, json=val_payload, timeout=30)
         if val_res.status_code == 200:
             val_text = val_res.json()["choices"][0]["message"]["content"].strip().upper()
-            print(f"DEBUG VAL_TEXT for '{topic}': {val_text}")
             if "NO" in val_text and "YES" not in val_text:
                 return {
                     "error": "This topic does not appear to be related to education. Please ask about an academic subject, concept, or formal skill."
@@ -92,8 +90,7 @@ def _cached_generate_content(topic: str, grade_level: str):
                         "error": "This topic does not appear to be related to education. Please ask about an academic subject, concept, or formal skill."
                     }
     except Exception as e:
-        print("DEBUG VAL ERROR:", e)
-        pass # Fallback to generation if validation fails
+        pass
 
     # Step 2: Generate Content
     prompt = build_prompt(topic, grade_level or None)
@@ -102,13 +99,12 @@ def _cached_generate_content(topic: str, grade_level: str):
     payload = {
         "model": model_name,
         "messages": messages,
-        "max_tokens": 1000,
         "temperature": 0.3
     }
 
     try:
         url = f"{base_url.rstrip('/')}/chat/completions"
-        response = requests.post(url, headers=headers, json=payload, timeout=30)
+        response = requests.post(url, headers=headers, json=payload, timeout=90)
         response.raise_for_status()
         text_out = response.json()["choices"][0]["message"]["content"]
         return _safe_json(text_out)
@@ -116,7 +112,7 @@ def _cached_generate_content(topic: str, grade_level: str):
         err_msg = str(e)
         if hasattr(e, 'response') and e.response is not None:
             err_msg += f" - Response: {e.response.text}"
-        raise RuntimeError(f"Cerebras LLM request failed: {err_msg}")
+        raise RuntimeError(f"A4F LLM request failed: {err_msg}")
 
 
 def generate_content(topic: str, grade_level: Optional[str]) -> GenerateContentResponse:

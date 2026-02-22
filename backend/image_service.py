@@ -6,8 +6,8 @@ from typing import Optional
 
 def _call_custom_api(prompt: str) -> str:
     api_key = os.getenv("IMAGE_API_KEY")
-    model_name = os.getenv("IMAGE_MODEL", "flux2-dev")
-    base_url = os.getenv("IMAGE_BASE_URL", "https://api.infip.pro/v1")
+    model_name = os.getenv("IMAGE_MODEL", "provider-4/imagen-4")
+    base_url = os.getenv("IMAGE_BASE_URL", "https://api.a4f.co/v1")
 
     if not api_key:
         raise RuntimeError("IMAGE_API_KEY is not set in .env")
