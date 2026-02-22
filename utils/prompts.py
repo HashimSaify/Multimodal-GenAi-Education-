@@ -13,23 +13,36 @@
     return "general education"
 
 
+def build_validation_prompt(topic: str) -> str:
+    return f"""
+Classify the following topic.
+Topic: "{topic}"
+
+Is this topic a formal academic subject, scientific concept, or complex professional skill?
+(Examples of scientific/academic: Photosynthesis, Quantum Mechanics, World War II, Machine Learning, Python Programming).
+
+If the topic is everyday casual advice, a cooking recipe, food, celebrity gossip, or basic instructions (e.g., "how to make maggi", "best movies", "how to tie a shoe"), answer with NO.
+If it is academic/scientific, answer with YES.
+
+Respond with EXACTLY ONE WORD: YES or NO.
+""".strip()
+
 def build_prompt(topic: str, grade_level: str | None):
     grade_text = f" for {grade_level} students" if grade_level else ""
     subject = _infer_subject(topic)
     return f"""
-You are an expert education assistant. First, determine if the topic "{topic}" is related to education, academia, learning concepts, or skills.
-If the topic is clearly NOT related to education (e.g. general chit-chat, cooking recipes, inappropriate content):
-Return ONLY valid JSON with a single field:
-- error: "This topic does not appear to be related to education. Please ask about an academic subject, concept, or skill."
+You are an expert education assistant.
 
-If the topic IS related to education:
-Explain the topic: {topic}{grade_text}.
+Your task is to explain the topic "{topic}"{grade_text}.
 Adjust depth and vocabulary for {grade_level or 'a general audience'}.
-Focus on clear structure and accuracy for {subject} topics.
-Return ONLY valid JSON with the following fields:
-- overview (string)
-- key_points (array of strings)
-- real_world_example (string)
-- flashcards (array of 3-5 short strings)
-- summary (string)
+Focus on clear structure and accuracy for {subject}.
+
+Return ONLY valid JSON with EXACTLY these fields:
+{{
+  "overview": "string",
+  "key_points": ["string", "string"],
+  "real_world_example": "string",
+  "flashcards": ["string", "string"],
+  "summary": "string"
+}}
 """.strip()

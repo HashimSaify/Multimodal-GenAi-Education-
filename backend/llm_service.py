@@ -5,7 +5,7 @@ from functools import lru_cache
 from typing import Optional
 
 from .schemas import GenerateContentResponse
-from utils.prompts import build_prompt
+from utils.prompts import build_prompt, build_validation_prompt
 
 
 def _safe_json(text: str) -> dict:
@@ -29,7 +29,21 @@ def _safe_json(text: str) -> dict:
         if cleaned.startswith("json"):
             cleaned = cleaned.replace("json", "", 1).strip()
     try:
-        return json.loads(cleaned)
+        data = json.loads(cleaned)
+        if isinstance(data, dict) and "flashcards" in data and isinstance(data["flashcards"], list):
+            new_fc = []
+            for item in data["flashcards"]:
+                if isinstance(item, dict):
+                    q = item.get("question", "") or item.get("front", "") or item.get("term", "")
+                    a = item.get("answer", "") or item.get("back", "") or item.get("definition", "")
+                    if q and a:
+                        new_fc.append(f"**{q}**<br>{a}")
+                    else:
+                        new_fc.append(str(item))
+                else:
+                    new_fc.append(str(item))
+            data["flashcards"] = new_fc
+        return data
     except json.JSONDecodeError:
         return {
             "overview": cleaned,
@@ -49,13 +63,41 @@ def _cached_generate_content(topic: str, grade_level: str):
     if not api_key:
         raise RuntimeError("LLM_API_KEY is not set in .env")
 
-    prompt = build_prompt(topic, grade_level or None)
-    messages = [{"role": "user", "content": prompt}]
-    
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json"
     }
+    url = f"{base_url.rstrip('/')}/chat/completions"
+
+    # Step 1: Validate Topic
+    val_payload = {
+        "model": model_name,
+        "messages": [{"role": "user", "content": build_validation_prompt(topic)}],
+        "max_tokens": 5,
+        "temperature": 0.0
+    }
+    try:
+        val_res = requests.post(url, headers=headers, json=val_payload, timeout=10)
+        if val_res.status_code == 200:
+            val_text = val_res.json()["choices"][0]["message"]["content"].strip().upper()
+            print(f"DEBUG VAL_TEXT for '{topic}': {val_text}")
+            if "NO" in val_text and "YES" not in val_text:
+                return {
+                    "error": "This topic does not appear to be related to education. Please ask about an academic subject, concept, or formal skill."
+                }
+            if "NO" in val_text and "YES" in val_text:
+                # If the model gives both YES and NO, we lean towards NO since it's confused
+                if val_text.startswith("NO"):
+                    return {
+                        "error": "This topic does not appear to be related to education. Please ask about an academic subject, concept, or formal skill."
+                    }
+    except Exception as e:
+        print("DEBUG VAL ERROR:", e)
+        pass # Fallback to generation if validation fails
+
+    # Step 2: Generate Content
+    prompt = build_prompt(topic, grade_level or None)
+    messages = [{"role": "user", "content": prompt}]
     
     payload = {
         "model": model_name,
