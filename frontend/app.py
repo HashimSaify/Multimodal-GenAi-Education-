@@ -5,7 +5,7 @@ import time
 import uuid
 from datetime import datetime, date, timedelta
 
-API_URL = "http://127.0.0.1:8000"
+API_URL = "https://multimodal-genai-education.onrender.com"
 
 st.set_page_config(
     page_title="EduGen AI",
