@@ -101,11 +101,6 @@ def inject_css():
         border-bottom: none !important;
     }
 
-    /* ═══════════════════════════════════════════
-       TRUE CENTERING — target Streamlit internals
-    ═══════════════════════════════════════════ */
-
-    /* The main scrollable area next to sidebar */
     section.main > div:first-child {
         display: flex !important;
         flex-direction: column !important;
@@ -121,11 +116,9 @@ def inject_css():
         width: 100% !important;
         margin-left: auto !important;
         margin-right: auto !important;
-        /* Prevent auto-scroll jumping */
         overflow-anchor: none !important;
     }
 
-    /* Prevent scroll jump on rerun */
     section.main {
         overflow-anchor: none !important;
     }
@@ -247,56 +240,138 @@ def inject_css():
         margin: 18px 0;
     }
 
-    /* History */
+    /* ============================================================
+       CHAT HISTORY — IMPROVED
+    ============================================================ */
+
+    /* Section label with extending hairline rule */
     .hist-group-label {
-        font-size: 0.65rem;
+        font-size: 0.60rem;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.09em;
+        letter-spacing: 0.12em;
         color: var(--text-3);
-        margin: 14px 0 6px 2px;
+        margin: 14px 0 3px 2px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
 
+    .hist-group-label::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(90deg, var(--border-2), transparent);
+    }
+
+    /* Scroll container */
+    section[data-testid="stSidebar"] [data-testid="stVerticalBlockBorderWrapper"] {
+        border: none !important;
+        background: transparent !important;
+    }
+
+    /* ── Inactive history button ── */
     section[data-testid="stSidebar"] .stButton > button[kind="secondary"] {
         background: transparent !important;
-        border: 1px solid transparent !important;
-        color: var(--text-2) !important;
-        font-size: 0.84rem !important;
-        font-weight: 500 !important;
-        padding: 9px 12px !important;
-        border-radius: 10px !important;
+        border: none !important;
+        border-left: 2px solid transparent !important;
+        color: var(--text-3) !important;
+        font-size: 0.82rem !important;
+        font-weight: 400 !important;
+        padding: 6px 10px 6px 11px !important;
+        border-radius: 0 8px 8px 0 !important;
         text-align: left !important;
         justify-content: flex-start !important;
         white-space: nowrap !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
-        transition: all 0.15s !important;
+        transition:
+            background 0.16s ease,
+            color 0.16s ease,
+            border-color 0.16s ease,
+            padding-left 0.16s ease !important;
         width: 100% !important;
+        letter-spacing: 0 !important;
+        line-height: 1.5 !important;
+        box-shadow: none !important;
     }
 
     section[data-testid="stSidebar"] .stButton > button[kind="secondary"]:hover {
-        background: var(--surface) !important;
-        border-color: var(--border) !important;
-        color: var(--text) !important;
+        background: rgba(255, 255, 255, 0.035) !important;
+        border-left-color: rgba(201, 168, 76, 0.4) !important;
+        color: var(--text-2) !important;
+        padding-left: 15px !important;
+        box-shadow: none !important;
+        transform: none !important;
+        filter: none !important;
+    }
+
+    /* ── Active / selected history button ──
+       Override the gold "New Chat" primary style only for history items.
+       We use the :not([key="new_chat"]) trick via data attributes.
+       Streamlit doesn't expose key on the DOM, so we target by order:
+       the New Chat button is always the FIRST primary button in sidebar.
+       History active items come after → we override with higher specificity.
+    */
+    section[data-testid="stSidebar"] div[data-testid="stVerticalBlock"] .stButton > button[kind="primary"],
+    section[data-testid="stSidebar"] div[data-testid="stVerticalBlockBorderWrapper"] .stButton > button[kind="primary"] {
+        background: linear-gradient(
+            90deg,
+            rgba(201, 168, 76, 0.14) 0%,
+            rgba(201, 168, 76, 0.03) 100%
+        ) !important;
+        color: var(--gold-2) !important;
+        border: none !important;
+        border-left: 2px solid var(--gold) !important;
+        border-radius: 0 8px 8px 0 !important;
+        font-weight: 500 !important;
+        font-size: 0.82rem !important;
+        padding: 6px 10px 6px 13px !important;
+        letter-spacing: 0 !important;
+        line-height: 1.5 !important;
+        box-shadow: none !important;
+        transition: background 0.16s ease !important;
+        width: 100% !important;
+        text-align: left !important;
+        justify-content: flex-start !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        transform: none !important;
+        filter: none !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stVerticalBlock"] .stButton > button[kind="primary"]:hover,
+    section[data-testid="stSidebar"] div[data-testid="stVerticalBlockBorderWrapper"] .stButton > button[kind="primary"]:hover {
+        background: linear-gradient(
+            90deg,
+            rgba(201, 168, 76, 0.20) 0%,
+            rgba(201, 168, 76, 0.06) 100%
+        ) !important;
+        box-shadow: none !important;
+        filter: none !important;
+        transform: none !important;
+    }
+
+    /* No history placeholder */
+    .no-history {
+        text-align: center;
+        padding: 22px 8px 14px;
+        color: var(--text-3);
+        font-size: 0.80rem;
+        line-height: 1.75;
+    }
+
+    .no-history-icon {
+        font-size: 1.4rem;
+        margin-bottom: 8px;
+        opacity: 0.3;
+        display: block;
     }
 
     /* ============================================================
-       EMPTY STATE — bulletproof centering via inline HTML
+       EMPTY STATE
     ============================================================ */
-
-    /* Kill ALL Streamlit wrapper interference in the hero zone */
-    .hero-outer,
-    .hero-outer > div,
-    .hero-outer * {
-        box-sizing: border-box;
-    }
-
-    /* Streamlit markdown wrapper reset */
-    [data-testid="stMarkdownContainer"]:has(.hero-outer) {
-        width: 100% !important;
-        display: block !important;
-    }
-
     .hero-icon-img {
         width: clamp(72px, 12vw, 96px);
         height: clamp(72px, 12vw, 96px);
@@ -387,7 +462,6 @@ def inject_css():
         padding: 1.25rem 0 !important;
     }
 
-    /* User bubble */
     .stChatMessage[data-testid*="user"] > div {
         background: var(--surface) !important;
         border: 1px solid var(--border-2) !important;
@@ -395,13 +469,11 @@ def inject_css():
         padding: 15px 20px !important;
     }
 
-    /* Assistant avatar */
     .stChatMessage[data-testid*="assistant"] .stChatMessageAvatarAssistant {
         background: linear-gradient(135deg, #c9a84c, #7c6ff7) !important;
         border-radius: 10px !important;
     }
 
-    /* Response card header */
     .response-header {
         display: flex;
         align-items: center;
@@ -428,7 +500,6 @@ def inject_css():
         text-transform: uppercase;
     }
 
-    /* Timestamp badge */
     .meta-pill {
         display: inline-flex;
         align-items: center;
@@ -516,7 +587,6 @@ def inject_css():
         margin: 1.8rem 0 !important;
     }
 
-    /* Flashcards grid — responsive 2-col → 1-col */
     .fc-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr));
@@ -569,7 +639,6 @@ def inject_css():
         margin-bottom: 8px;
     }
 
-    /* Info box override */
     .stAlert {
         background: linear-gradient(135deg, rgba(201,168,76,0.07) 0%, rgba(124,111,247,0.05) 100%) !important;
         border: 1px solid rgba(201,168,76,0.18) !important;
@@ -579,7 +648,6 @@ def inject_css():
         font-size: 0.9rem !important;
     }
 
-    /* Images */
     .stImage {
         border-radius: var(--radius-lg);
         overflow: hidden;
@@ -597,7 +665,6 @@ def inject_css():
         backdrop-filter: blur(20px) !important;
     }
 
-    /* Inner wrapper — center + cap width */
     .stChatInputContainer > div {
         max-width: min(860px, 100%) !important;
         margin-left: auto !important;
@@ -684,19 +751,7 @@ def inject_css():
         }
     }
 
-    /* Caption */
     .stCaptionContainer, .caption { color: var(--text-3) !important; font-size: 0.78rem !important; }
-
-    /* No conversations placeholder */
-    .no-history {
-        text-align: center;
-        padding: 20px 8px;
-        color: var(--text-3);
-        font-size: 0.82rem;
-        line-height: 1.6;
-    }
-
-    .no-history-icon { font-size: 1.6rem; margin-bottom: 8px; opacity: 0.5; }
 
     /* ============================================================
        RESPONSIVE — TABLET  (≤ 900px)
@@ -743,7 +798,6 @@ def inject_css():
             border-radius: 18px !important;
         }
 
-        /* Stack flashcard columns */
         [data-testid="column"] {
             width: 100% !important;
             flex: 1 1 100% !important;
@@ -776,7 +830,6 @@ def inject_css():
             font-size: 1.05rem !important;
         }
 
-        /* Chat input full width on mobile */
         .stChatInputContainer > div {
             border-radius: 14px !important;
         }
@@ -820,14 +873,12 @@ st.markdown("""
 <script>
 (function() {
     const win = window.parent;
-    // Kill overflow-anchor globally so Streamlit can't scroll-snap to new content
     const s = win.document.createElement('style');
     s.id = 'no-scroll-anchor';
     if (!win.document.getElementById('no-scroll-anchor')) {
         s.textContent = '.main, .main *, section.main > div { overflow-anchor: none !important; }';
         win.document.head.appendChild(s);
     }
-    // Scroll to top when the session is fresh (scroll position near 0)
     const main = win.document.querySelector('section.main');
     if (main && main.scrollTop < 50) {
         main.scrollTo({ top: 0, behavior: 'instant' });
@@ -875,7 +926,7 @@ with st.sidebar:
     if not sessions:
         st.markdown("""
             <div class="no-history">
-                <div class="no-history-icon">📭</div>
+                <span class="no-history-icon">📭</span>
                 No conversations yet.<br>Ask your first question below.
             </div>
         """, unsafe_allow_html=True)
@@ -893,7 +944,7 @@ with st.sidebar:
                         is_active = (s["id"] == st.session_state.current_session_id)
                         title = s["title"][:34] + ("…" if len(s["title"]) > 34 else "")
                         if st.button(
-                            f"{'▸' if is_active else '○'}  {title}",
+                            title,
                             key=f"hist_{s['id']}",
                             use_container_width=True,
                             type="primary" if is_active else "secondary"
@@ -905,7 +956,6 @@ with st.sidebar:
 current_id = st.session_state.current_session_id
 active_session = st.session_state.sessions.get(current_id) if current_id else None
 
-# If we just created a new session, scroll to top then clear the flag
 if st.session_state.get("_scroll_to_top"):
     st.markdown("""
     <script>
@@ -944,7 +994,6 @@ else:
         ts_str  = datetime.fromtimestamp(ts).strftime("%I:%M %p").lstrip("0")
         grade   = turn.get("grade", "Any")
 
-        # User message
         with st.chat_message("user"):
             st.write(topic)
             st.markdown(
@@ -952,7 +1001,6 @@ else:
                 unsafe_allow_html=True
             )
 
-        # Assistant message
         with st.chat_message("assistant", avatar="🎓"):
             st.markdown("""
                 <div class="response-header">
@@ -1012,15 +1060,13 @@ else:
                         unsafe_allow_html=True
                     )
 
-# Invisible anchor at the very bottom of the conversation
+# Bottom anchor
 st.markdown('<div id="edugen-bottom-anchor" style="height:1px;"></div>', unsafe_allow_html=True)
 
-# Scroll to bottom after a new message is rendered
 if st.session_state.get("_scroll_to_bottom"):
     st.markdown("""
     <script>
     (function() {
-        // Re-enable overflow-anchor just for the scroll, then disable after
         function scrollToBottom() {
             const main = window.parent.document.querySelector('section.main');
             const anchor = window.parent.document.getElementById('edugen-bottom-anchor');
@@ -1030,7 +1076,6 @@ if st.session_state.get("_scroll_to_bottom"):
                 main.scrollTo({ top: main.scrollHeight, behavior: 'smooth' });
             }
         }
-        // Small delay to let Streamlit finish painting DOM
         setTimeout(scrollToBottom, 120);
     })();
     </script>
@@ -1046,7 +1091,6 @@ if prompt := st.chat_input("Ask about any concept, topic, or idea…"):
         st.write(prompt)
         st.markdown(f'<div class="meta-pill">📚 {grade_level}</div>', unsafe_allow_html=True)
 
-    # Immediately scroll down so user sees their message + spinner
     st.markdown("""
     <script>
     (function() {
