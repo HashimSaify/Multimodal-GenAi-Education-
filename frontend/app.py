@@ -1,12 +1,12 @@
-﻿import base64
+import base64
 import streamlit as st
 import requests
 import time
 import uuid
+import os
 from datetime import datetime, date, timedelta
 
-API_URL = "https://multimodal-genai-education.onrender.com"
-
+API_URL = os.environ.get("API_URL", "http://127.0.0.1:8000")
 st.set_page_config(
     page_title="EduGen AI",
     page_icon="🎓",
@@ -50,6 +50,9 @@ def inject_css():
     <style>
     @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap');
 
+    /* ============================================================
+       DARK MODE VARIABLES (default)
+    ============================================================ */
     :root {
         --bg:             #06060a;
         --bg-2:           #0d0d14;
@@ -72,6 +75,57 @@ def inject_css():
         --radius:         12px;
         --radius-lg:      18px;
         --radius-xl:      26px;
+        --shadow-sm:      0 2px 8px rgba(0,0,0,0.3);
+        --shadow-md:      0 4px 24px rgba(0,0,0,0.4);
+        --shadow-lg:      0 8px 40px rgba(0,0,0,0.5);
+        --chat-user-bg:   #1a1a27;
+        --chat-input-bg:  #1a1a27;
+        --stAlert-bg:     linear-gradient(135deg, rgba(201,168,76,0.07) 0%, rgba(124,111,247,0.05) 100%);
+        --stAlert-border: rgba(201,168,76,0.18);
+        --stAlert-left:   #c9a84c;
+        --hero-gradient:  radial-gradient(ellipse 80% 50% at 20% -10%, rgba(124,111,247,0.06) 0%, transparent 60%),
+                          radial-gradient(ellipse 60% 40% at 80% 100%, rgba(201,168,76,0.04) 0%, transparent 60%);
+        --pill-bg:        #1a1a27;
+    }
+
+    /* ============================================================
+       LIGHT MODE VARIABLES — auto via prefers-color-scheme
+    ============================================================ */
+    @media (prefers-color-scheme: light) {
+        :root {
+            --bg:             #f5f4f0;
+            --bg-2:           #eeecе6;
+            --bg-3:           #e8e5dc;
+            --bg-4:           rgba(230,225,210,0.7);
+            --sidebar-bg:     #f0ede5;
+            --surface:        #ffffff;
+            --surface-2:      #f7f5ef;
+            --border:         rgba(160,140,100,0.18);
+            --border-2:       rgba(160,140,100,0.32);
+            --text:           #1c1a14;
+            --text-2:         #5a5340;
+            --text-3:         #9e9478;
+            --gold:           #a0762a;
+            --gold-2:         #7a5718;
+            --gold-glow:      rgba(160,118,42,0.15);
+            --gold-glow-2:    rgba(160,118,42,0.06);
+            --violet:         #5a52d5;
+            --violet-dim:     rgba(90,82,213,0.1);
+            --radius:         12px;
+            --radius-lg:      18px;
+            --radius-xl:      26px;
+            --shadow-sm:      0 1px 4px rgba(0,0,0,0.08);
+            --shadow-md:      0 4px 16px rgba(0,0,0,0.1);
+            --shadow-lg:      0 8px 32px rgba(0,0,0,0.12);
+            --chat-user-bg:   #ffffff;
+            --chat-input-bg:  #ffffff;
+            --stAlert-bg:     linear-gradient(135deg, rgba(160,118,42,0.07) 0%, rgba(90,82,213,0.04) 100%);
+            --stAlert-border: rgba(160,118,42,0.22);
+            --stAlert-left:   #a0762a;
+            --hero-gradient:  radial-gradient(ellipse 80% 50% at 20% -10%, rgba(90,82,213,0.05) 0%, transparent 60%),
+                              radial-gradient(ellipse 60% 40% at 80% 100%, rgba(160,118,42,0.05) 0%, transparent 60%);
+            --pill-bg:        #ffffff;
+        }
     }
 
     *, *::before, *::after {
@@ -85,14 +139,12 @@ def inject_css():
 
     html, body, [class*="css"] {
         background: var(--bg) !important;
-        color: var(--text);
+        color: var(--text) !important;
     }
 
     .stApp {
         background: var(--bg) !important;
-        background-image:
-            radial-gradient(ellipse 80% 50% at 20% -10%, rgba(124,111,247,0.06) 0%, transparent 60%),
-            radial-gradient(ellipse 60% 40% at 80% 100%, rgba(201,168,76,0.04) 0%, transparent 60%) !important;
+        background-image: var(--hero-gradient) !important;
         background-attachment: fixed !important;
     }
 
@@ -173,8 +225,8 @@ def inject_css():
 
     /* New Chat button */
     section[data-testid="stSidebar"] .stButton > button[kind="primary"] {
-        background: linear-gradient(135deg, #c9a84c 0%, #b8942e 100%) !important;
-        color: #06060a !important;
+        background: linear-gradient(135deg, var(--gold) 0%, #b8942e 100%) !important;
+        color: #ffffff !important;
         border: none !important;
         border-radius: var(--radius) !important;
         font-weight: 600 !important;
@@ -186,8 +238,14 @@ def inject_css():
         width: 100% !important;
     }
 
+    @media (prefers-color-scheme: dark) {
+        section[data-testid="stSidebar"] .stButton > button[kind="primary"] {
+            color: #06060a !important;
+        }
+    }
+
     section[data-testid="stSidebar"] .stButton > button[kind="primary"]:hover {
-        box-shadow: 0 4px 24px rgba(201,168,76,0.35) !important;
+        box-shadow: 0 4px 24px var(--gold-glow) !important;
         transform: translateY(-1px) !important;
         filter: brightness(1.08) !important;
     }
@@ -227,10 +285,10 @@ def inject_css():
     }
 
     section[data-testid="stSidebar"] .stRadio > div > label[data-checked="true"] {
-        background: linear-gradient(135deg, rgba(201,168,76,0.18) 0%, rgba(124,111,247,0.12) 100%) !important;
+        background: linear-gradient(135deg, var(--gold-glow) 0%, var(--violet-dim) 100%) !important;
         border-color: var(--gold) !important;
-        color: var(--gold-2) !important;
-        box-shadow: inset 0 0 0 1px rgba(201,168,76,0.15) !important;
+        color: var(--gold) !important;
+        box-shadow: inset 0 0 0 1px var(--gold-glow) !important;
     }
 
     /* Divider */
@@ -241,10 +299,8 @@ def inject_css():
     }
 
     /* ============================================================
-       CHAT HISTORY — IMPROVED
+       CHAT HISTORY
     ============================================================ */
-
-    /* Section label with extending hairline rule */
     .hist-group-label {
         font-size: 0.60rem;
         font-weight: 700;
@@ -264,13 +320,11 @@ def inject_css():
         background: linear-gradient(90deg, var(--border-2), transparent);
     }
 
-    /* Scroll container */
     section[data-testid="stSidebar"] [data-testid="stVerticalBlockBorderWrapper"] {
         border: none !important;
         background: transparent !important;
     }
 
-    /* ── Inactive history button ── */
     section[data-testid="stSidebar"] .stButton > button[kind="secondary"] {
         background: transparent !important;
         border: none !important;
@@ -297,8 +351,8 @@ def inject_css():
     }
 
     section[data-testid="stSidebar"] .stButton > button[kind="secondary"]:hover {
-        background: rgba(255, 255, 255, 0.035) !important;
-        border-left-color: rgba(201, 168, 76, 0.4) !important;
+        background: rgba(128,100,40,0.06) !important;
+        border-left-color: var(--gold-glow) !important;
         color: var(--text-2) !important;
         padding-left: 15px !important;
         box-shadow: none !important;
@@ -306,21 +360,14 @@ def inject_css():
         filter: none !important;
     }
 
-    /* ── Active / selected history button ──
-       Override the gold "New Chat" primary style only for history items.
-       We use the :not([key="new_chat"]) trick via data attributes.
-       Streamlit doesn't expose key on the DOM, so we target by order:
-       the New Chat button is always the FIRST primary button in sidebar.
-       History active items come after → we override with higher specificity.
-    */
     section[data-testid="stSidebar"] div[data-testid="stVerticalBlock"] .stButton > button[kind="primary"],
     section[data-testid="stSidebar"] div[data-testid="stVerticalBlockBorderWrapper"] .stButton > button[kind="primary"] {
         background: linear-gradient(
             90deg,
-            rgba(201, 168, 76, 0.14) 0%,
-            rgba(201, 168, 76, 0.03) 100%
+            var(--gold-glow) 0%,
+            var(--gold-glow-2) 100%
         ) !important;
-        color: var(--gold-2) !important;
+        color: var(--gold) !important;
         border: none !important;
         border-left: 2px solid var(--gold) !important;
         border-radius: 0 8px 8px 0 !important;
@@ -341,18 +388,6 @@ def inject_css():
         filter: none !important;
     }
 
-    section[data-testid="stSidebar"] div[data-testid="stVerticalBlock"] .stButton > button[kind="primary"]:hover,
-    section[data-testid="stSidebar"] div[data-testid="stVerticalBlockBorderWrapper"] .stButton > button[kind="primary"]:hover {
-        background: linear-gradient(
-            90deg,
-            rgba(201, 168, 76, 0.20) 0%,
-            rgba(201, 168, 76, 0.06) 100%
-        ) !important;
-        box-shadow: none !important;
-        filter: none !important;
-        transform: none !important;
-    }
-
     /* No history placeholder */
     .no-history {
         text-align: center;
@@ -370,7 +405,7 @@ def inject_css():
     }
 
     /* ============================================================
-       EMPTY STATE
+       EMPTY STATE / HERO
     ============================================================ */
     .hero-icon-img {
         width: clamp(72px, 12vw, 96px);
@@ -383,9 +418,9 @@ def inject_css():
         font-size: clamp(1.8rem, 4vw, 2.6rem);
         margin: 0 auto 1.6rem;
         box-shadow:
-            0 0 0 10px rgba(201,168,76,0.06),
-            0 8px 40px rgba(201,168,76,0.2),
-            0 0 80px rgba(124,111,247,0.12);
+            0 0 0 10px var(--gold-glow-2),
+            0 8px 40px var(--gold-glow),
+            0 0 80px var(--violet-dim);
         animation: pulse-ring 3s ease-in-out infinite;
         flex-shrink: 0;
     }
@@ -412,7 +447,7 @@ def inject_css():
 
     .hero-title em {
         font-style: italic;
-        color: var(--gold-2);
+        color: var(--gold);
     }
 
     .hero-sub {
@@ -436,7 +471,7 @@ def inject_css():
     }
 
     .suggestion-pill {
-        background: var(--surface);
+        background: var(--pill-bg);
         border: 1px solid var(--border);
         border-radius: 100px;
         padding: 8px 16px;
@@ -446,12 +481,14 @@ def inject_css():
         white-space: nowrap;
         transition: all 0.18s;
         cursor: default;
+        box-shadow: var(--shadow-sm);
     }
 
     .suggestion-pill:hover {
-        background: var(--surface-2);
+        background: var(--surface);
         border-color: var(--gold);
-        color: var(--gold-2);
+        color: var(--gold);
+        box-shadow: var(--shadow-md);
     }
 
     /* ============================================================
@@ -463,10 +500,11 @@ def inject_css():
     }
 
     .stChatMessage[data-testid*="user"] > div {
-        background: var(--surface) !important;
+        background: var(--chat-user-bg) !important;
         border: 1px solid var(--border-2) !important;
         border-radius: var(--radius-lg) !important;
         padding: 15px 20px !important;
+        box-shadow: var(--shadow-sm) !important;
     }
 
     .stChatMessage[data-testid*="assistant"] .stChatMessageAvatarAssistant {
@@ -543,7 +581,7 @@ def inject_css():
     }
 
     .stTabs [aria-selected="true"] {
-        color: var(--gold-2) !important;
+        color: var(--gold) !important;
         background: var(--bg-3) !important;
         border-bottom: 2px solid var(--gold) !important;
     }
@@ -606,6 +644,7 @@ def inject_css():
         color: var(--text-2);
         transition: all 0.22s cubic-bezier(.16,1,.3,1);
         overflow: hidden;
+        box-shadow: var(--shadow-sm);
     }
 
     .flashcard::before {
@@ -619,11 +658,11 @@ def inject_css():
     }
 
     .flashcard:hover {
-        border-color: rgba(201,168,76,0.3);
+        border-color: var(--gold-glow);
         background: var(--surface);
         color: var(--text);
         transform: translateY(-3px);
-        box-shadow: 0 8px 24px rgba(0,0,0,0.3), 0 0 0 1px rgba(201,168,76,0.08);
+        box-shadow: var(--shadow-md);
     }
 
     .flashcard:hover::before {
@@ -640,9 +679,9 @@ def inject_css():
     }
 
     .stAlert {
-        background: linear-gradient(135deg, rgba(201,168,76,0.07) 0%, rgba(124,111,247,0.05) 100%) !important;
-        border: 1px solid rgba(201,168,76,0.18) !important;
-        border-left: 3px solid var(--gold) !important;
+        background: var(--stAlert-bg) !important;
+        border: 1px solid var(--stAlert-border) !important;
+        border-left: 3px solid var(--stAlert-left) !important;
         border-radius: var(--radius) !important;
         color: var(--text-2) !important;
         font-size: 0.9rem !important;
@@ -652,7 +691,7 @@ def inject_css():
         border-radius: var(--radius-lg);
         overflow: hidden;
         border: 1px solid var(--border);
-        box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        box-shadow: var(--shadow-lg);
     }
 
     /* ============================================================
@@ -669,17 +708,17 @@ def inject_css():
         max-width: min(860px, 100%) !important;
         margin-left: auto !important;
         margin-right: auto !important;
-        background: var(--surface) !important;
+        background: var(--chat-input-bg) !important;
         border: 1px solid var(--border-2) !important;
         border-radius: var(--radius-xl) !important;
-        box-shadow: 0 0 0 4px rgba(201,168,76,0.03), 0 4px 24px rgba(0,0,0,0.3) !important;
+        box-shadow: 0 0 0 4px var(--gold-glow-2), var(--shadow-md) !important;
         overflow: hidden !important;
         transition: all 0.22s !important;
     }
 
     .stChatInputContainer > div:focus-within {
-        border-color: rgba(201,168,76,0.4) !important;
-        box-shadow: 0 0 0 4px var(--gold-glow-2), 0 4px 32px rgba(0,0,0,0.3) !important;
+        border-color: var(--gold) !important;
+        box-shadow: 0 0 0 4px var(--gold-glow-2), var(--shadow-md) !important;
     }
 
     .stChatInputContainer textarea {
@@ -700,7 +739,7 @@ def inject_css():
         background: linear-gradient(135deg, var(--gold) 0%, #b8942e 100%) !important;
         border-radius: 12px !important;
         margin: 8px !important;
-        color: #06060a !important;
+        color: #ffffff !important;
         border: none !important;
         transition: all 0.18s !important;
     }
@@ -740,14 +779,14 @@ def inject_css():
 
     @keyframes pulse-ring {
         0%, 100% {
-            box-shadow: 0 0 0 10px rgba(201,168,76,0.06),
-                        0 8px 40px rgba(201,168,76,0.2),
-                        0 0 80px rgba(124,111,247,0.12);
+            box-shadow: 0 0 0 10px var(--gold-glow-2),
+                        0 8px 40px var(--gold-glow),
+                        0 0 80px var(--violet-dim);
         }
         50% {
-            box-shadow: 0 0 0 18px rgba(201,168,76,0.03),
-                        0 8px 60px rgba(201,168,76,0.3),
-                        0 0 100px rgba(124,111,247,0.18);
+            box-shadow: 0 0 0 18px var(--gold-glow-2),
+                        0 8px 60px var(--gold-glow),
+                        0 0 100px var(--violet-dim);
         }
     }
 
