@@ -1,0 +1,36 @@
+# Virtual Environments
+.venv/
+venv/
+ENV/
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Avoid uploading frontend files to the backend container
+frontend/
+.streamlit/
+app.py
+
+# Environment variables
+.env
+.env.test
+
+# IDEs / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Data/misc
+vector_store/
+data/
+*.db
+*.sqlite
