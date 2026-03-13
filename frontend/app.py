@@ -10,7 +10,7 @@ from datetime import datetime, date, timedelta
 is_prod = "RENDER" in os.environ or os.environ.get("ENVIRONMENT", "").lower() == "production"
 
 if is_prod:
-    API_URL = "https://multimodal-genai-education.onrender.com"
+    API_URL = "https://multimodal-genai-education-1.onrender.com"
 else:
     API_URL = os.environ.get("API_URL", "http://127.0.0.1:8000")
 
