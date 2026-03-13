@@ -6,10 +6,10 @@ import uuid
 import os
 from datetime import datetime, date, timedelta
 
-# If ENVIRONMENT is set to 'production', use the Render URL, otherwise use localhost.
-# You can override this entirely by setting API_URL directly.
-env_type = os.environ.get("ENVIRONMENT", "development")
-default_url = "https://multimodal-genai-education.onrender.com" if env_type == "production" else "http://127.0.0.1:8000"
+# Render automatically injects the 'RENDER' environment variable into its deployments.
+# If we are on Render, or ENVIRONMENT is explicitly set to production, use the remote backend.
+is_prod = os.environ.get("RENDER") == "true" or os.environ.get("ENVIRONMENT") == "production"
+default_url = "https://multimodal-genai-education.onrender.com" if is_prod else "http://127.0.0.1:8000"
 API_URL = os.environ.get("API_URL", default_url)
 
 st.set_page_config(
