@@ -6,7 +6,12 @@ import uuid
 import os
 from datetime import datetime, date, timedelta
 
-API_URL = os.environ.get("API_URL", "http://127.0.0.1:8000")
+# If ENVIRONMENT is set to 'production', use the Render URL, otherwise use localhost.
+# You can override this entirely by setting API_URL directly.
+env_type = os.environ.get("ENVIRONMENT", "development")
+default_url = "https://multimodal-genai-education.onrender.com" if env_type == "production" else "http://127.0.0.1:8000"
+API_URL = os.environ.get("API_URL", default_url)
+
 st.set_page_config(
     page_title="EduGen AI",
     page_icon="🎓",
