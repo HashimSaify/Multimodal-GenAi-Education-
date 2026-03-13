@@ -6,11 +6,13 @@ import uuid
 import os
 from datetime import datetime, date, timedelta
 
-# Render automatically injects the 'RENDER' environment variable into its deployments.
-# If we are on Render, or ENVIRONMENT is explicitly set to production, use the remote backend.
-is_prod = os.environ.get("RENDER") == "true" or os.environ.get("ENVIRONMENT") == "production"
-default_url = "https://multimodal-genai-education.onrender.com" if is_prod else "http://127.0.0.1:8000"
-API_URL = os.environ.get("API_URL", default_url)
+# Render automatically injects the 'RENDER' environment variable.
+is_prod = "RENDER" in os.environ or os.environ.get("ENVIRONMENT", "").lower() == "production"
+
+if is_prod:
+    API_URL = "https://multimodal-genai-education.onrender.com"
+else:
+    API_URL = os.environ.get("API_URL", "http://127.0.0.1:8000")
 
 st.set_page_config(
     page_title="EduGen AI",
