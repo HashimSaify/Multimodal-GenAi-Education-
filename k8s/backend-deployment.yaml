@@ -61,7 +61,7 @@ spec:
         - name: LLM_MODEL
           value: "gemini-3-flash-preview"
         - name: LLM_BASE_URL
-          value: "https://generativelanguage.googleapis.com/v1beta/openai"
+          value: "https://generativelanguage.googleapis.com/v1beta"
         - name: IMAGE_MODEL
           value: "img4"
         - name: IMAGE_BASE_URL
