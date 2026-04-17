@@ -48,7 +48,7 @@ spec:
             memory: "128Mi"
         # Environment Variables from Secrets
         env:
-        - name: GEMINI_API_KEY
+        - name: LLM_API_KEY
           valueFrom:
             secretKeyRef:
               name: edugen-secrets
@@ -58,5 +58,13 @@ spec:
             secretKeyRef:
               name: edugen-secrets
               key: IMAGE_API_KEY
+        - name: LLM_MODEL
+          value: "gemini-3-flash-preview"
+        - name: LLM_BASE_URL
+          value: "https://generativelanguage.googleapis.com/v1beta/openai"
+        - name: IMAGE_MODEL
+          value: "img4"
+        - name: IMAGE_BASE_URL
+          value: "https://api.infip.pro/v1"
         - name: LOG_LEVEL
           value: "INFO"
