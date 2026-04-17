@@ -22,19 +22,19 @@ spec:
       containers:
       - name: frontend
         image: 968641182612.dkr.ecr.eu-north-1.amazonaws.com/edugen-frontend:latest
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8501
         # Health Probes
         livenessProbe:
           tcpSocket:
             port: 8501
-          initialDelaySeconds: 10
+          initialDelaySeconds: 30
           periodSeconds: 20
         readinessProbe:
           tcpSocket:
             port: 8501
-          initialDelaySeconds: 10
+          initialDelaySeconds: 20
           periodSeconds: 10
         # Resource Management
         resources:

@@ -22,7 +22,7 @@ spec:
       containers:
       - name: backend
         image: 968641182612.dkr.ecr.eu-north-1.amazonaws.com/edugen-backend:latest
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8000
         # Health Probes
@@ -30,13 +30,13 @@ spec:
           httpGet:
             path: /
             port: 8000
-          initialDelaySeconds: 5
+          initialDelaySeconds: 30
           periodSeconds: 10
         readinessProbe:
           httpGet:
             path: /
             port: 8000
-          initialDelaySeconds: 5
+          initialDelaySeconds: 20
           periodSeconds: 5
         # Resource Management
         resources:
