@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: AWS_ACCOUNT_ID.dkr.ecr.eu-north-1.amazonaws.com/edugen-frontend:latest
+        image: 968641182612.dkr.ecr.eu-north-1.amazonaws.com/edugen-frontend:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8501

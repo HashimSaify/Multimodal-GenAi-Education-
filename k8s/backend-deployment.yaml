@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: AWS_ACCOUNT_ID.dkr.ecr.eu-north-1.amazonaws.com/edugen-backend:latest
+        image: 968641182612.dkr.ecr.eu-north-1.amazonaws.com/edugen-backend:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8000
