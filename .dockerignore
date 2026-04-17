@@ -10,10 +10,8 @@ __pycache__/
 *.so
 .Python
 
-# Avoid uploading frontend files to the backend container
-frontend/
+# Avoid uploading unnecessary files
 .streamlit/
-app.py
 
 # Environment variables
 .env

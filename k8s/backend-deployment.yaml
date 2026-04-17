@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+  labels:
+    app: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: AWS_ACCOUNT_ID.dkr.ecr.eu-north-1.amazonaws.com/edugen-backend:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+        # Health Probes
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        # Resource Management
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+        # Environment Variables from Secrets
+        env:
+        - name: GEMINI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: edugen-secrets
+              key: GEMINI_API_KEY
+        - name: IMAGE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: edugen-secrets
+              key: IMAGE_API_KEY
+        - name: LOG_LEVEL
+          value: "INFO"

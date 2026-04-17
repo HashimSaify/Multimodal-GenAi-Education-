@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+  labels:
+    app: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: AWS_ACCOUNT_ID.dkr.ecr.eu-north-1.amazonaws.com/edugen-frontend:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8501
+        # Health Probes
+        livenessProbe:
+          tcpSocket:
+            port: 8501
+          initialDelaySeconds: 10
+          periodSeconds: 20
+        readinessProbe:
+          tcpSocket:
+            port: 8501
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        # Resource Management
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "300m"
+            memory: "256Mi"
+        # Environment Variables
+        env:
+        - name: API_URL
+          value: "http://backend-service:8000"
