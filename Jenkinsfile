@@ -16,7 +16,8 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'pip install -r requirements.txt'
+                sh 'pip install -r requirements-backend.txt'
+                sh 'pip install -r requirements-frontend.txt'
             }
         }
 
@@ -29,10 +30,9 @@ pipeline {
             }
         }
 
-        stage('Deploy to Minikube') {
+        stage('Deploy to EKS') {
             steps {
                 script {
-                    // This assumes the Jenkins agent has access to kubectl and minikube context
                     sh "kubectl apply -f k8s/secrets.yaml"
                     sh "kubectl apply -f k8s/"
                 }

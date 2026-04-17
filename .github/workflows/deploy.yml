@@ -19,7 +19,8 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        pip install -r requirements-backend.txt
+        pip install -r requirements-frontend.txt
 
     - name: Build Backend Image
       run: |
