@@ -1,7 +1,0 @@
-﻿fastapi
-uvicorn
-streamlit
-sentence-transformers
-python-dotenv
-requests
-numpy

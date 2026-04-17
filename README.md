@@ -1,220 +1,107 @@
-# EduGen AI (Multimodal GenAI Education)
+# 🎓 EduGen AI: High-Fidelity Multimodal Education Platform
 
-EduGen AI is a production-ready, multimodal Generative AI application designed to transform any topic into a structured, highly visual "Concept Pack". By targeting specific grade levels, it tailors complex concepts into easy-to-understand narratives, visual flashcards, and structured data suitable for presentations.
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white)](https://kubernetes.io/)
+[![AWS EKS](https://img.shields.io/badge/AWS_EKS-232F3E?style=for-the-badge&logo=amazon-aws&logoColor=white)](https://aws.amazon.com/eks/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://streamlit.io/)
+[![Google Gemini](https://img.shields.io/badge/Google_Gemini-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
 
-## ✨ Features
+**EduGen AI** is an institutional-grade, multimodal Generative AI platform designed to transform complex topics into structured, visually-rich educational "Concept Packs." By leveraging cutting-edge LLMs and specialized image generation, it tailors learning experiences for everyone from elementary students to professional researchers.
 
-- **Tailored Learning:** Generate content dynamically adapted to specific grade levels (Elementary, High School, College, Professional).
-- **Multimodal Generation:**
-  - **Text:** Comprehensive learning narratives and structured concept breakdowns using Google Gemini.
-  - **Images:** High-fidelity visual flashcards and diagrams generated via an Image Generation API to complement the text.
-- **Structured Concept Packs:** Outputs structured JSON containing narrative text, key concepts with images, detailed explanations, and summary points.
-- **Modern User Interface:** A sleek, responsive, and dynamic frontend built with Streamlit, featuring a dark-themed UI, session history management, and polished aesthetics.
-- **Optimized Performance:** In-memory caching for content and images to avoid repeated API calls and ensure fast response times.
-- **Vector Search Ready:** Uses ChromaDB with SentenceTransformers embeddings for semantic search capabilities.
+---
 
-## 🏗️ Architecture
+## ✨ Core Features
 
-- **Frontend:** [Streamlit](https://streamlit.io/) for a highly interactive and aesthetically pleasing user interface.
-- **Backend:** [FastAPI](https://fastapi.tiangolo.com/) providing robust REST APIs (`/generate-content`, `/generate-image`).
-- **LLM Engine:** [Google Gemini](https://ai.google.dev/) for generating educational text and structuring data.
-- **Image Engine:** Custom Image Generation API for generating educational visuals.
+*   **⚡ Multimodal Learning Experience**: Combines deep narrative explanations with high-fidelity, text-free educational diagrams.
+*   **🎯 Grade-Level Tailoring**: Dynamically adjusts vocabulary, complexity, and examples for **Elementary**, **High School**, **College**, and **Professional** audiences.
+*   **🔠 Structured Knowledge**: Generates structured JSON output containing narratives, key concepts, flashcards, and summary points.
+*   **🖼️ Visual Flashcards**: Integrates specialized Image Generation APIs to create complementary visuals for every major concept.
+*   **🚀 Production-Ready Architecture**: Built for the cloud with specialized container optimization and multi-environment Kubernetes support.
 
-## 🧱 Digital Infrastructure & DevOps
+---
 
-The application is architected for scalability and high availability using a containerized multi-pod system.
+## 🏗️ Technical Architecture
 
-### Architecture Diagram
+The platform architecture ensures scalability, high availability, and rapid performance through a decoupled frontend-backend system.
+
 ```mermaid
 graph TD
-    User([User Browser]) -- NodePort: 30001 --> FS[Frontend Service]
-    subgraph Kubernetes Cluster
-        FS -- Selects --> FP((Frontend Pods x2))
-        FP -- env: API_URL --> BS[Backend Service]
-        BS -- ClusterIP: 8000 --> BP((Backend Pods x2))
+    User([User Browser]) -- Port: 80 --> ELB[AWS Load Balancer]
+    ELB -- Port: 80 --> FS[Frontend Service]
+    subgraph "Kubernetes Cluster (EKS / Local)"
+        FS -- Selects --> FP((Frontend Pods))
+        FP -- API_URL --> BS[Backend Service]
+        BS -- Port: 8000 --> BP((Backend Pods))
     end
-    BP --> Gemini[Google Gemini API]
-    BP --> ImageAPI[Image Generation API]
+    BP -- v1beta REST --> Gemini[Google Gemini API]
+    BP -- REST --> ImageAPI[Image Generation API]
 ```
 
+---
 
-## 🚀 Setup & Installation
+## 🛠️ Infrastructure & DevOps Excellence
 
-### 1. Environment Setup
+### 🐳 Optimized Containerization
+Initially, the application containers exceeded **9GB** due to heavy dependency overhead. We implemented strategic optimizations to reach a lightweight **1.16GB** footprint:
+*   **CPU-Only PyTorch**: Stripped out 5GB+ of unnecessary CUDA/GPU libraries.
+*   **Split Dependencies**: Separated frontend and backend requirements to reduce image bloat.
+*   **Native API Adoption**: Switched to the native Gemini REST API to eliminate secondary library dependencies.
 
-Create a virtual environment and install the required dependencies:
+### ☸️ Kubernetes Orchestration
+The application is ready for both local and cloud environments:
+*   **Local (Kind/Docker Desktop)**: Optimized with `IfNotPresent` pull policies and `NodePort` mapping for rapid testing.
+*   **Cloud (Amazon EKS)**: Deployed with managed `t3.micro` nodes, custom health probes, and `LoadBalancer` integration for production-grade availability.
+*   **Zero-Downtime Updates**: Configured with `RollingUpdate` strategies to ensure continuous service during new releases.
 
-```bash
-python -m venv .venv
+---
 
-# On Windows:
-.venv\Scripts\activate
-# On Linux/macOS:
-# source .venv/bin/activate
+## 🚀 Getting Started
 
-pip install -r requirements.txt
-```
-
-### 2. Configure Environment Variables
-
-Create a `.env` file in the root directory and add your API keys:
-
+### 1. Environment Configuration
+Create a `.env` file in the root directory:
 ```ini
-GEMINI_API_KEY=your_gemini_api_key_here
-GEMINI_MODEL=gemini-1.5-flash
-IMAGE_API_KEY=your_image_api_key_here
-IMAGE_MODEL=provider-4/imagen-4
-IMAGE_BASE_URL=https://api.a4f.co/v1
-VECTOR_DB_PATH=./vector_store
+GEMINI_API_KEY=your_key
+LLM_MODEL=gemini-3-flash-preview
+LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta
+IMAGE_API_KEY=your_key
+IMAGE_MODEL=img4
+IMAGE_BASE_URL=https://api.infip.pro/v1
 LOG_LEVEL=INFO
 ```
 
-### 3. Start the Backend Server
+### 2. Local Kubernetes Deployment (Docker Desktop)
+```powershell
+# 1. Switch to local context
+kubectl config use-context docker-desktop
 
-Run the FastAPI backend using `uvicorn`:
+# 2. Apply Secrets and Manifests
+kubectl apply -f k8s/secrets.yaml
+kubectl apply -f k8s/
 
-```bash
-python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload
+# 3. Access the app
+kubectl port-forward service/frontend-service 8501:80
 ```
+Open [http://localhost:8501](http://localhost:8501)
 
-The backend API will be available at `http://127.0.0.1:8000`. You can view the interactive API documentation at `http://127.0.0.1:8000/docs`.
+### 3. Cloud Deployment (AWS EKS)
+```powershell
+# Create the cluster
+eksctl create cluster --name edugen-cluster --region eu-north-1 --node-type t3.micro --nodes 2
 
-### 4. Start the Frontend Application
-
-In a new terminal, activate your virtual environment and run the Streamlit app:
-
-```bash
-streamlit run frontend/app.py
-```
-
-The application will open in your default web browser (typically at `http://localhost:8501`).
-
-## 💡 Sample Prompts
-
-Try these topics with different grade levels to see how the content adapts:
-
-- _Explain Transformer architecture in NLP_ (College / Professional)
-- _Photosynthesis_ (Elementary / High School)
-- _Newton's Laws of Motion_ (High School)
-- _The Water Cycle_ (Elementary)
-- _Quantum Computing_ (College)
-
-## 🐳 Dockerization
-
-The project is split into two separate microservices:
-
-1. **Backend (FastAPI):** `Dockerfile.backend`
-2. **Frontend (Streamlit):** `Dockerfile.frontend`
-
-To build images locally for Minikube:
-```bash
-# 1. Point terminal to Minikube's Docker daemon
-eval $(minikube docker-env)
-
-# 2. Build backend
-docker build -t backend:latest -f Dockerfile.backend .
-
-# 3. Build frontend
-docker build -t frontend:latest -f Dockerfile.frontend .
-```
-
-## ☸️ Kubernetes Deployment (Minikube)
-
-All manifests are located in the `/k8s` folder.
-
-### Deployment Steps:
-1. **Start Minikube:** `minikube start`
-2. **Setup Secrets:**
-   - Open `k8s/secrets.yaml`
-   - Add your API keys (Base64 encoded)
-   - Apply them: `kubectl apply -f k8s/secrets.yaml`
-3. **Apply Other Manifests:** `kubectl apply -f k8s/`
-4. **Verify Status:**
-   - `kubectl get pods`
-   - `kubectl get svc`
-5. **Access Application:** `minikube service frontend-service`
-
-## 🎥 How to Demo: Zero-Downtime Rolling Update
-
-To demonstrate this for your project presentation, follow these steps in your terminal:
-
-1. **Watch the Pods in real-time:**
-   Open a side terminal and run:
-   ```bash
-   kubectl get pods -w
-   ```
-
-2. **Trigger an Update:**
-   Update the image of the backend deployment (simulating a v1 to v2 update):
-   ```bash
-   kubectl set image deployment/backend-deployment backend=backend:latest
-   ```
-
-3. **Observe the Magic:**
-   In your "Watch" terminal, you will see:
-   - A new pod is **Created**.
-   - The new pod waits for its **Readiness Probe** to pass.
-   - Once ready, the old pod is **Terminated**.
-   - This repeats until all 2 replicas are updated.
-
-4. **Verify Zero Downtime:**
-   Refresh your browser throughout this process. You will notice the application never goes offline.
-
-### 🔄 Rolling Update Strategy
-The system uses a `RollingUpdate` strategy configured with:
-- `maxUnavailable: 1`: At least one pod is always online.
-- `maxSurge: 1`: One extra pod is created during the transition.
-
-## 🤖 CI/CD Pipeline
-A GitHub Actions workflow is provided in `.github/workflows/deploy.yml` which automates:
-- Dependency installation
-- Docker image building
-- Sanity checks
-
-### Jenkins (Optional)
-If you prefer Jenkins, use the provided `Jenkinsfile`. It defines a declarative pipeline that mirrors the Docker build and K8s deployment logic.
-
-## ☁️ AWS Deployment (eu-north-1)
-
-For production-like deployment on AWS EKS, follow these steps:
-
-### 1. Prerequisites
-- **AWS CLI** configured (`aws configure`)
-- **Docker Desktop** running
-- **eksctl** installed (`winget install weaveworks.eksctl`)
-
-### 2. Automated Setup
-We provide an automation script that handles ECR creation, image building, and manifest updates:
-
-1. Open PowerShell as Administrator.
-2. Run the script:
-   ```powershell
-   .\scripts\deploy_aws.ps1
-   ```
-3. Enter your **Gemini** and **Image** API keys when prompted.
-
-### 3. Create EKS Cluster
-Run this command to create your AWS cluster (Takes ~20 mins):
-```bash
-eksctl create cluster --name edugen-cluster --region eu-north-1 --nodegroup-name standard-nodes --nodes 2 --managed
-```
-
-### 4. Deploy
-Once the cluster is ready, apply everything:
-```bash
+# Deploy
 kubectl apply -f k8s/
 ```
 
-### 5. Access on Mobile
-Get the public AWS LoadBalancer URL:
-```bash
-kubectl get svc frontend-service
-```
-Copy the **EXTERNAL-IP** and open it in any mobile browser!
+---
 
+## 📂 Project Structure
+*   `backend/`: FastAPI application server and AI integration services.
+*   `frontend/`: Streamlit interactive user interface.
+*   `k8s/`: Kubernetes manifests for Deployments, Services, and Secrets.
+*   `utils/`: Shared prompt engineering and utility functions.
+*   `scripts/`: Automation scripts for deployment and environment setup.
+*   `docs/`: High-level design documents and project reports.
 
-## 📝 Notes & Development
+---
 
-- The application uses custom CSS injection in Streamlit to achieve a premium, dark-mode visual experience reminiscent of high-end AI tools.
-- Generated images and content are cached to optimize API usage and latency.
-- Make sure you have valid API keys from Google and your Image API provider for full functionality.
+Designed and built for **Project - II: Multimodal GenAI Education**. 🎓✨
